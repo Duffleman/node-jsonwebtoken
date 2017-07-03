@@ -3,8 +3,6 @@ var NotBeforeError    = require('./lib/NotBeforeError');
 var TokenExpiredError = require('./lib/TokenExpiredError');
 var decode            = require('./decode');
 var jws               = require('jws');
-var ms                = require('ms');
-var xtend             = require('xtend');
 
 module.exports = function (jwtString, secretOrPublicKey, options, callback) {
   if ((typeof options === 'function') && !callback) {
@@ -16,8 +14,6 @@ module.exports = function (jwtString, secretOrPublicKey, options, callback) {
     options = {};
   }
 
-  //clone this object since we are going to mutate it.
-  options = xtend(options);
   var done;
 
   if (callback) {
@@ -165,7 +161,10 @@ module.exports = function (jwtString, secretOrPublicKey, options, callback) {
   }
 
   if (options.maxAge) {
-    var maxAge = ms(options.maxAge);
+    var maxAge = options.maxAge;
+    if (typeof maxAge !== 'number') {
+      return done(new JsonWebTokenError('maxAge must be a number'));
+    }
     if (typeof payload.iat !== 'number') {
       return done(new JsonWebTokenError('iat required when maxAge is specified'));
     }
